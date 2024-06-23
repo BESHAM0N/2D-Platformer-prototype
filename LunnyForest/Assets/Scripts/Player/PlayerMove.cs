@@ -1,0 +1,135 @@
+using UnityEngine;
+using UnityEngine.InputSystem;
+
+[RequireComponent(typeof(Rigidbody2D), typeof(TouchingDirections))]
+public class PlayerMove : MonoBehaviour
+{
+    private bool _isFacingRight = true;
+
+    public bool IsFacingRight
+    {
+        get { return _isFacingRight; }
+        private set
+        {
+            if (_isFacingRight != value)
+            {
+                transform.localScale *= new Vector2(-1, 1);
+            }
+
+            _isFacingRight = value;
+        }
+    }
+
+    private bool _canMove;
+
+    private bool CanMove
+    {
+        get { return _animator.GetBool(AnimationStrings.canMove); }
+    }
+
+    private float CurrentMoveSpeed
+    {
+        get
+        {
+            if (!CanMove) return 0;
+            if (IsMoving && !_touchingDirections.IsOnWall)
+            {
+                return _touchingDirections.IsGrounded ? _walkSpeed : _airWalkSpeed;
+            }
+
+            return 0;
+        }
+    }
+
+    [SerializeField] private bool _isMoving;
+
+    private bool IsMoving
+    {
+        get => _isMoving;
+        set
+        {
+            _isMoving = value;
+            _animator.SetBool(AnimationStrings.isMoving, value);
+        }
+    }
+
+    public bool IsAlive => _animator.GetBool(AnimationStrings.isAlive);
+
+    [SerializeField] private float _walkSpeed = 5f;
+    [SerializeField] private float _airWalkSpeed = 3f;
+    [SerializeField] private float _jumpImpulse = 10f;
+    private Vector2 _moveInput;
+    private Rigidbody2D _rigidbody2D;
+    private Animator _animator;
+
+    private TouchingDirections _touchingDirections;
+    // private Quaternion TurnRight => new(0, 0, 0, 0);
+    // private Quaternion TurnLeft => Quaternion.Euler(0, 180, 0);
+
+    private void Awake()
+    {
+        _rigidbody2D = GetComponent<Rigidbody2D>();
+        _animator = GetComponent<Animator>();
+        _touchingDirections = GetComponent<TouchingDirections>();
+    }
+
+    private void FixedUpdate()
+    {
+        _rigidbody2D.velocity = new Vector2(_moveInput.x * CurrentMoveSpeed, _rigidbody2D.velocity.y);
+        _animator.SetFloat(AnimationStrings.yVelocity, _rigidbody2D.velocity.y);
+    }
+
+    public void OnMove(InputAction.CallbackContext context)
+    {
+        _moveInput = context.ReadValue<Vector2>();
+        if (IsAlive)
+        {
+            IsMoving = _moveInput != Vector2.zero;
+            SetFacingDirection(_moveInput);
+        }
+        else
+        {
+            IsMoving = false;
+        }
+        // transform.rotation = GetRotationFrom(_moveInput);
+    }
+
+    private void SetFacingDirection(Vector2 moveInput)
+    {
+        if (moveInput.x > 0 && !IsFacingRight)
+        {
+            IsFacingRight = true;
+        }
+        else if (moveInput.x < 0 && IsFacingRight)
+        {
+            IsFacingRight = false;
+        }
+    }
+
+    // private Quaternion GetRotationFrom(Vector3 velocity)
+    // {
+    //     return velocity.x switch
+    //     {
+    //         > 0 => TurnRight,
+    //         < 0 => TurnLeft,
+    //         _ => transform.rotation
+    //     };
+    // }
+
+    public void OnJump(InputAction.CallbackContext context)
+    {
+        if (context.started && _touchingDirections.IsGrounded && CanMove)
+        {
+            _animator.SetTrigger(AnimationStrings.jumpTrigger);
+            _rigidbody2D.velocity = new Vector2(_rigidbody2D.velocity.x, _jumpImpulse);
+        }
+    }
+
+    public void OnAttack(InputAction.CallbackContext context)
+    {
+        if (context.started)
+        {
+            _animator.SetTrigger(AnimationStrings.groundAttackTrigger);
+        }
+    }
+}
