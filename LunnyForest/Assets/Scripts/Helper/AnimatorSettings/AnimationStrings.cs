@@ -10,5 +10,10 @@ internal class AnimationStrings
     internal static readonly string canMove = "CanMove";
     internal static readonly string hasTarget = "HasTarget";
     internal static readonly string isAlive =  "IsAlive";
+    internal static readonly string isHit = "IsHit";
+    internal static readonly string hitTrigger = "Hit";
+    internal static readonly string lockVelocity = "LockVelocity";
+    internal static readonly string attackCooldown = "AttackCooldown";
+    internal static readonly string rangedAttack = "RangedAttack";
 }
 

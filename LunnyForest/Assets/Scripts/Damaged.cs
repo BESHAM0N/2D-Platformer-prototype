@@ -3,9 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.Serialization;
 
 public class Damaged : MonoBehaviour
 {
+    public UnityEvent<int, Vector2> damageableHit;
+    public UnityEvent damageableDeath;
+
     public int MaxHealth
     {
         get { return _maxHealth; }
@@ -13,20 +18,22 @@ public class Damaged : MonoBehaviour
     }
 
     [SerializeField] private int _health = 100;
+
     public int Health
     {
-        get { return _health;}
+        get { return _health; }
         set
         {
             _health = value;
-            if(_health <0)
+            if (_health <= 0)
             {
                 IsAlive = false;
             }
         }
     }
-    
+
     [SerializeField] private bool _isAlive = true;
+
     public bool IsAlive
     {
         get { return _isAlive; }
@@ -34,15 +41,26 @@ public class Damaged : MonoBehaviour
         {
             _isAlive = value;
             _animator.SetBool(AnimationStrings.isAlive, value);
-            Debug.Log($"IsAlive set {value}");
+
+            if (value == false)
+            {
+                damageableDeath.Invoke();
+            }
+          
         }
     }
 
     [SerializeField] private int _maxHealth = 100;
     [SerializeField] private bool _isInvincible;
-    [SerializeField]private float _invincibilityTime = 0.25f;
+    [SerializeField] private float _invincibilityTime = 0.25f;
     private float _timeSinceHit;
     private Animator _animator;
+
+    public bool LockVelocity
+    {
+        get { return _animator.GetBool(AnimationStrings.lockVelocity); }
+        set { _animator.SetBool(AnimationStrings.lockVelocity, value); }
+    }
 
     private void Awake()
     {
@@ -61,16 +79,35 @@ public class Damaged : MonoBehaviour
 
             _timeSinceHit += Time.deltaTime;
         }
-        
-        TakeDamage(10);
     }
 
-    public void TakeDamage(int damage)
+    public bool TakeDamage(int damage, Vector2 knockback)
     {
         if (IsAlive && !_isInvincible)
         {
             Health -= damage;
             _isInvincible = true;
+            _animator.SetTrigger(AnimationStrings.hitTrigger);
+            LockVelocity = true;
+            damageableHit?.Invoke(damage, knockback);
+            CharacterEvents.characterDamaged.Invoke(gameObject, damage);
+            return true;
         }
+
+        return false;
+    }
+
+    public bool Heal(int healthRestore)
+    {
+        if (IsAlive && Health < MaxHealth)
+        {
+            int maxHeal = Mathf.Max(MaxHealth - Health, 0);
+            int actualHeal = Mathf.Min(maxHeal, healthRestore);
+            Health += actualHeal;
+            CharacterEvents.characterHealed(gameObject, actualHeal);
+            return true;
+        }
+
+        return false;
     }
 }

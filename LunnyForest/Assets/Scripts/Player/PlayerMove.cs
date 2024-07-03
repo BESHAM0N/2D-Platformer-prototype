@@ -1,10 +1,13 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[RequireComponent(typeof(Rigidbody2D), typeof(TouchingDirections))]
+[RequireComponent(typeof(Rigidbody2D), typeof(TouchingDirections), typeof(Damaged))]
 public class PlayerMove : MonoBehaviour
 {
+    [SerializeField] private bool _isMoving;
     private bool _isFacingRight = true;
+    private bool _canMove;
+    private Damaged _damaged;
 
     public bool IsFacingRight
     {
@@ -20,7 +23,6 @@ public class PlayerMove : MonoBehaviour
         }
     }
 
-    private bool _canMove;
 
     private bool CanMove
     {
@@ -40,8 +42,6 @@ public class PlayerMove : MonoBehaviour
             return 0;
         }
     }
-
-    [SerializeField] private bool _isMoving;
 
     private bool IsMoving
     {
@@ -71,11 +71,13 @@ public class PlayerMove : MonoBehaviour
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _animator = GetComponent<Animator>();
         _touchingDirections = GetComponent<TouchingDirections>();
+        _damaged = GetComponent<Damaged>();
     }
 
     private void FixedUpdate()
     {
-        _rigidbody2D.velocity = new Vector2(_moveInput.x * CurrentMoveSpeed, _rigidbody2D.velocity.y);
+        if (!_damaged.LockVelocity)
+            _rigidbody2D.velocity = new Vector2(_moveInput.x * CurrentMoveSpeed, _rigidbody2D.velocity.y);
         _animator.SetFloat(AnimationStrings.yVelocity, _rigidbody2D.velocity.y);
     }
 
@@ -131,5 +133,18 @@ public class PlayerMove : MonoBehaviour
         {
             _animator.SetTrigger(AnimationStrings.groundAttackTrigger);
         }
+    }
+    
+    public void OnRangerAttack(InputAction.CallbackContext context)
+    {
+        if (context.started)
+        {
+            _animator.SetTrigger(AnimationStrings.rangedAttack);
+        }
+    }
+
+    public void OnHit(int damage, Vector2 knockback)
+    {
+        _rigidbody2D.velocity = new Vector2(knockback.x, _rigidbody2D.velocity.y + knockback.y);
     }
 }

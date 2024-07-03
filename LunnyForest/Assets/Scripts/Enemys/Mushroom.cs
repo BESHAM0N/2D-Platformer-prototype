@@ -1,9 +1,15 @@
 using System;
 using UnityEngine;
 
-[RequireComponent(typeof(Rigidbody2D), typeof(TouchingDirections))]
+[RequireComponent(typeof(Rigidbody2D), typeof(TouchingDirections), typeof(Damaged))]
 public class Mushroom : MonoBehaviour
 {
+    public bool LockVelocity
+    {
+        get { return _animator.GetBool(AnimationStrings.lockVelocity); }
+        set { _animator.SetBool(AnimationStrings.lockVelocity, value); }
+    }
+
     public bool HasTarget
     {
         get { return _hasTarget; }
@@ -19,12 +25,20 @@ public class Mushroom : MonoBehaviour
     [SerializeField] private float _walkSpeed = 3f;
     [SerializeField] private DetectionArea _detectionArea;
     [SerializeField] private float _walkStopRate = 0.05f;
+    [SerializeField] private DetectionArea _cliffDetection;
     private Rigidbody2D _rigidbody2D;
     private TouchingDirections _touchingDirections;
     private WalkableDirection _walkDirection;
     private Animator _animator;
     private Vector2 _walkDirectionVector = Vector2.right;
     private bool _hasTarget;
+    private Damaged _damaged;
+
+    private float _attackCooldown
+    {
+        get { return _animator.GetFloat(AnimationStrings.attackCooldown); }
+        set { _animator.SetFloat(AnimationStrings.attackCooldown, Mathf.Max(value, 0)); }
+    }
 
     public WalkableDirection WalkDirection
     {
@@ -54,11 +68,16 @@ public class Mushroom : MonoBehaviour
         _rigidbody2D = GetComponent<Rigidbody2D>();
         _touchingDirections = GetComponent<TouchingDirections>();
         _animator = GetComponent<Animator>();
+        _damaged = GetComponent<Damaged>();
     }
 
     private void Update()
     {
         HasTarget = _detectionArea.detectedColliders.Count > 0;
+        if (_attackCooldown > 0)
+        {
+            _attackCooldown -= Time.deltaTime;
+        }
     }
 
     private void FixedUpdate()
@@ -68,13 +87,11 @@ public class Mushroom : MonoBehaviour
             FlipDirection();
         }
 
-        if (CanMove)
+        if (!_damaged.LockVelocity)
         {
-            _rigidbody2D.velocity = new Vector2(_walkSpeed * _walkDirectionVector.x, _rigidbody2D.velocity.y);
-        }
-        else
-        {
-            _rigidbody2D.velocity = new Vector2(Mathf.Lerp(_rigidbody2D.velocity.x, 0, _walkStopRate), _rigidbody2D.velocity.y);
+            _rigidbody2D.velocity = CanMove && _touchingDirections.IsGrounded
+                ? new Vector2(_walkSpeed * _walkDirectionVector.x, _rigidbody2D.velocity.y)
+                : new Vector2(Mathf.Lerp(_rigidbody2D.velocity.x, 0, _walkStopRate), _rigidbody2D.velocity.y);
         }
     }
 
@@ -91,6 +108,14 @@ public class Mushroom : MonoBehaviour
         else
         {
             Debug.Log("Нет значения для движения в стороны");
+        }
+    }
+
+    public void OnCliffDetected()
+    {
+        if (_touchingDirections.IsGrounded)
+        {
+            FlipDirection();
         }
     }
 
