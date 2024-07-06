@@ -1,13 +1,16 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 public class HealthPickup : MonoBehaviour
 {
     [SerializeField] private int _healthRestore = 20;
+    private AudioSource _audioSource;
     private Vector3 _spinRotationSpeed = new Vector3(0, 180, 0);
+
+    private void Awake()
+    {
+        _audioSource = GetComponent<AudioSource>();
+    }
 
     private void Update()
     {
@@ -18,11 +21,13 @@ public class HealthPickup : MonoBehaviour
     {
         Damaged damaged = collision.GetComponent<Damaged>();
 
-        if (damaged)
+        if (damaged && damaged.Health < damaged.MaxHealth)
         {
             bool wasHealed = damaged.Heal(_healthRestore);
             if (wasHealed)
             {
+                if (_audioSource)
+                    AudioSource.PlayClipAtPoint(_audioSource.clip, gameObject.transform.position, _audioSource.volume);
                 Destroy(gameObject);
             }
         }

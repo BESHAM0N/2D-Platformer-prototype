@@ -1,15 +1,11 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
-using UnityEngine.Serialization;
 
 public class Damaged : MonoBehaviour
 {
     public UnityEvent<int, Vector2> damageableHit;
     public UnityEvent damageableDeath;
+    public UnityEvent<int, int> healthChanged;
 
     public int MaxHealth
     {
@@ -25,6 +21,7 @@ public class Damaged : MonoBehaviour
         set
         {
             _health = value;
+            healthChanged?.Invoke(_health, MaxHealth);
             if (_health <= 0)
             {
                 IsAlive = false;

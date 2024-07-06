@@ -6,7 +6,7 @@ internal class AnimationStrings
     internal static readonly string jumpTrigger = "Jump";
     internal static readonly string isOnWall = "IsOnWall";
     internal static readonly string isOnCeiling = "IsOnCeiling";
-    internal static readonly string groundAttackTrigger = "GroundAttack";
+    internal static readonly string groundAttackTrigger = "Attack";
     internal static readonly string canMove = "CanMove";
     internal static readonly string hasTarget = "HasTarget";
     internal static readonly string isAlive =  "IsAlive";

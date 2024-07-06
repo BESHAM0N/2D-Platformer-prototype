@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class UIManager : MonoBehaviour
 {
     [SerializeField] private GameObject _damageTextPrefab;
     [SerializeField] private GameObject _healthTextPrefab;
     [SerializeField] private Canvas _canvas;
-    
+
     private void Awake()
     {
         _canvas = FindObjectOfType<Canvas>();
@@ -43,5 +44,20 @@ public class UIManager : MonoBehaviour
             .GetComponent<TMP_Text>();
 
         tmpText.text = healthRestored.ToString();
+    }
+
+    public void OnExit(InputAction.CallbackContext context)
+    {
+#if(UNITY_EDITOR || DEVELOPMENT_BUILD)
+        Debug.Log($"{this.name}:{GetType()}:{System.Reflection.MethodBase.GetCurrentMethod().Name}");
+#endif
+
+#if(UNITY_EDITOR)
+        UnityEditor.EditorApplication.isPlaying = false;
+#elif (UNITY_STANDALONE)
+        Application.Quit();
+#elif (UNITY_WEBGL)
+        SceneManager.LoadScene("QuitScene");
+#endif
     }
 }
