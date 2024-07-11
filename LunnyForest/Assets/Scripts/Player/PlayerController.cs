@@ -2,7 +2,7 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D), typeof(TouchingDirections), typeof(Damaged))]
-public class PlayerMove : MonoBehaviour
+public class PlayerController : MonoBehaviour
 {
     [SerializeField] private bool _isMoving;
     private bool _isFacingRight = true;
