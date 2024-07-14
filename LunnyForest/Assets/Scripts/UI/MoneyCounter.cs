@@ -15,6 +15,8 @@ public class MoneyCounter : MonoBehaviour
     {
         var currentMoney = _localDataProvider.gameProgresses.Money;
         currentMoney += money;
+        _localDataProvider.gameProgresses.Money = currentMoney;
+        _localDataProvider.SavePlayerProgress();
         _count.text = currentMoney.ToString();
     }
     

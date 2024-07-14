@@ -12,6 +12,7 @@ public class UIMenuManager : MonoBehaviour
     [SerializeField] private Button _openChallengesButton;
     [SerializeField] private Button _exitChallengesButton;
     [SerializeField] private Button _openShopButton;
+    [SerializeField] private Button _exitShopButton;
     [SerializeField] private Button _levelOneButton;
     [SerializeField] private List<GameObject> _starsLevelOne;
     [SerializeField] private Button _levelTwoButton;
@@ -22,6 +23,7 @@ public class UIMenuManager : MonoBehaviour
     [SerializeField] private AudioSource _audioSource;
     [SerializeField] private GameObject _settingsMenu;
     [SerializeField] private GameObject _challengesMenu;
+    [SerializeField] private GameObject _shop;
     [SerializeField] private LocalDataProvider _localDataProvider;
     [SerializeField] private TMP_Text _moneyValue;
     [SerializeField] private MoneyCounter _moneyCounter;
@@ -33,6 +35,8 @@ public class UIMenuManager : MonoBehaviour
         _openChallengesButton.onClick.AddListener(OpenChallengesMenu);
         _exitChallengesButton.onClick.AddListener(CloseChallengesMenu);
         _levelOneButton.onClick.AddListener(ToLevelOveScene);
+        _openShopButton.onClick.AddListener(OpenShop);
+        _exitShopButton.onClick.AddListener(CloseShop);
         _moneyValue.text = _localDataProvider.gameProgresses.Money.ToString();
 
         foreach (var level in _localDataProvider.gameProgresses.CompletedLevels)
@@ -95,6 +99,16 @@ public class UIMenuManager : MonoBehaviour
     private void CloseChallengesMenu()
     {
         _challengesMenu.gameObject.SetActive(false);
+    }
+
+    private void OpenShop()
+    {
+        _shop.gameObject.SetActive(true);
+    }
+
+    private void CloseShop()
+    {
+        _shop.gameObject.SetActive(false);
     }
 
     private void ToLevelOveScene()
