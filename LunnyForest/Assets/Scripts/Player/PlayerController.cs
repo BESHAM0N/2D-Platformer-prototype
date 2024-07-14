@@ -23,7 +23,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
     private bool CanMove
     {
         get { return _animator.GetBool(AnimationStrings.canMove); }
