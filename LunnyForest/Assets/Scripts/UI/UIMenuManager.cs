@@ -23,11 +23,11 @@ public class UIMenuManager : MonoBehaviour
     [SerializeField] private AudioSource _audioSource;
     [SerializeField] private GameObject _settingsMenu;
     [SerializeField] private GameObject _challengesMenu;
-    [SerializeField] private GameObject _shop;
     [SerializeField] private LocalDataProvider _localDataProvider;
     [SerializeField] private TMP_Text _moneyValue;
     [SerializeField] private MoneyCounter _moneyCounter;
 
+    [SerializeField] private GameObject _shop;
     private void Start()
     {
         _settingsMenuButton.onClick.AddListener(OpenSettingsMenu);
@@ -79,8 +79,6 @@ public class UIMenuManager : MonoBehaviour
             }
         }
     }
-
-
     private void OpenSettingsMenu()
     {
         _settingsMenu.gameObject.SetActive(true);
