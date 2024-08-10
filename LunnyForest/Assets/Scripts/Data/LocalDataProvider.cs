@@ -8,10 +8,11 @@ using UnityEngine.SceneManagement;
 public class LocalDataProvider : MonoBehaviour
 {
     public GameProgress gameProgresses;
+    public ShopConteiner shopConteiner;
     
     private const string _gameProgressFileName = "GameProgress";
     private const string _shopFileName = "Shop";
-    private const string _playerInventoryFileName = "PlayerInventory";
+    private const string _inventoryFileName = "PlayerInventory";
     private const string _saveFileExtension = ".json";
     private int _numberScene;
     
@@ -20,7 +21,10 @@ public class LocalDataProvider : MonoBehaviour
     private void Awake()
     {
         _numberScene = SceneManager.GetActiveScene().buildIndex;
+        GenerateShop();
         LoadGameProgress();
+        LoadShop();
+        LoadInventory();
     }
 
     private string GetFullPath(string fileName)
@@ -91,5 +95,108 @@ public class LocalDataProvider : MonoBehaviour
             Debug.Log($"Произошло исключение при чтении json файла: {ex.Message}");
         }
         return true;
+    }
+    
+    public void SavePlayerInventory()
+    {
+        var serializeObject = JsonConvert.SerializeObject(Storage.PlayerInventory, Formatting.Indented);
+        File.WriteAllText(GetFullPath(_inventoryFileName), serializeObject);
+    }
+
+    private bool LoadInventory()
+    {
+        var path = GetFullPath(_inventoryFileName);
+        if (!IsDataFileExist(path))
+            return false;
+
+        var jsonText = File.ReadAllText(path);
+        if (string.IsNullOrEmpty(jsonText))
+        {
+            Debug.Log("Файл пустой");
+            return false;
+        }
+
+        try
+        {
+            Storage.PlayerInventory = JsonConvert.DeserializeObject<PlayerInventory>(jsonText);
+        }
+        catch (Exception ex)
+        {
+            Debug.Log($"Произошло исключение при чтении json файла: {ex.Message}");
+        }
+        return true;
+    }
+
+    private bool LoadShop()
+    {
+        var path = GetFullPath(_shopFileName);
+        if (!IsDataFileExist(path))
+            return false;
+
+        var jsonText = File.ReadAllText(path);
+        if (string.IsNullOrEmpty(jsonText))
+        {
+            Debug.Log("Файл пустой");
+            return false;
+        }
+
+        try
+        {
+            Storage.ShopConfig = JsonConvert.DeserializeObject<ShopConteiner>(jsonText);
+        }
+        catch (Exception ex)
+        {
+            Debug.Log($"Произошло исключение при чтении json файла: {ex.Message}");
+        }
+        return true;
+    }
+
+    private void GenerateShop()
+    {
+        shopConteiner = new ShopConteiner();
+        List<ShopItem> shopItems = new List<ShopItem>
+        {
+            new ShopItem
+            {
+                Id = "HP10",
+                BuyPrice = 3,
+                ItemType = ItemType.Potion
+            },
+            new ShopItem
+            {
+                Id = "HP50",
+                BuyPrice = 5,
+                ItemType = ItemType.Potion
+            },
+            new ShopItem
+            {
+                Id = "SpAttack",
+                BuyPrice = 7,
+                ItemType = ItemType.Ability
+            },
+            new ShopItem
+            {
+                Id = "Roll",
+                BuyPrice = 4,
+                ItemType = ItemType.Ability
+            },
+            new ShopItem
+            {
+                Id = "Bone",
+                BuyPrice = 4,
+                ItemType = ItemType.Trifle
+            },
+            new ShopItem
+            {
+                Id = "Apple",
+                BuyPrice = 5,
+                ItemType = ItemType.Trifle
+            },
+        };
+
+        shopConteiner.ShopItems = shopItems;
+        var serializeObject = JsonConvert.SerializeObject(shopConteiner, Formatting.Indented);
+        File.WriteAllText(GetFullPath(_shopFileName), serializeObject);
+        Debug.Log("Магазин был успешно заполнен");
     }
 }

@@ -2,12 +2,8 @@
   "CompletedLevels": [
     {
       "LevelNumber": 1,
-      "CollectedStarsId": [
-        1,
-        2,
-        3
-      ],
-      "IsCompleted": true
+      "CollectedStarsId": [],
+      "IsCompleted": false
     },
     {
       "LevelNumber": 2,
@@ -15,5 +11,5 @@
       "IsCompleted": false
     }
   ],
-  "Money": 10
+  "Money": 0
 }
